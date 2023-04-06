@@ -57,10 +57,10 @@
  d2[,c(cols_soilty) := lapply(.SD,as.factor),.SDcols = cols_soilty]
  d2 <- mltools::one_hot(d2, cols = c("soilty"))
  
- #since always with error, i then transfer 'soil type' into 'factor' again but doesn't work
- d2[, c('soilty_alfisols', 'soilty_fluvisols', 'soilty_inceptisols', 'soilty_mollisols', 'soilty_oxisols', 'soilty_saline') :=
-      .(as.factor(soilty_alfisols), as.factor(soilty_fluvisols), as.factor(soilty_inceptisols),
-        as.factor(soilty_mollisols), as.factor(soilty_oxisols), as.factor(soilty_saline))]
+ # #since always with error, i then transfer 'soil type' into 'factor' again but doesn't work
+ # d2[, c('soilty_alfisols', 'soilty_fluvisols', 'soilty_inceptisols', 'soilty_mollisols', 'soilty_oxisols', 'soilty_saline') :=
+ #      .(as.factor(soilty_alfisols), as.factor(soilty_fluvisols), as.factor(soilty_inceptisols),
+ #        as.factor(soilty_mollisols), as.factor(soilty_oxisols), as.factor(soilty_saline))]
 
  #split in train and test set
  set.seed(123)
@@ -125,7 +125,7 @@
  terminator <- mlr3tuning::trm("run_time", secs = 2 * 60 * 60)
  
  # Tune the model ---------------------------------------------------------
- tuner = tnr("hyperband", eta = 2L)
+ tuner = mlr3tuning::tnr("hyperband", eta = 2L)
  
  inst <- TuningInstanceSingleCrit$new(
    task = task.train,
