@@ -252,7 +252,7 @@
     geom_smooth(method = 'lm', se = FALSE, linetype = "solid") +
     theme(axis.text = element_text(family="A",size = 12,colour ="black" ),#
           axis.title.x = element_text(family="A",size = 12,colour ="black",face = "bold"),#
-          axis.title.y  = element_text(family="A",size = 12,colour ="black",face = "bold"))+#
+          # axis.title.y  = element_text(family="A",size = 12,colour ="black",face = "bold"))+#
     theme(legend.position = c(0.85,0.15),#
           legend.text = element_text(family="A", size = 9,face = "bold"),#
           legend.title = element_text(family="A",size = 9,face = "bold"),#
@@ -267,3 +267,4 @@
   #           inherit.aes = FALSE, col = "#1a9641",family="A", size = 4,face = "bold")
 }
 
+ # hello check update 
