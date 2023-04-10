@@ -55,7 +55,7 @@
  
   # remove the variable not needed anymore
   
-  cols <- c("som","clay","totalp","qmax","klnew","soil_type_fao2","al","fe")
+  cols <- c("som","clay","totalp","qmax","klnew","soil_type_fao2","al","fe","ln_al","ln_fe")
   d2 <- as.data.table(na.omit(d2[,c(cols):=NULL]))
   
   # perform correlation test for all numeric variables
@@ -119,23 +119,29 @@
   glm_qk <-lm(formula = ln_qk ~ ln_clay:ln_som + ph_h2o:ln_fe + ln_totalp, data = dt.train)
  
   # make a linear model on training data without Fe&Al
+
+  glm_qmax_noFA <-lm(formula = ln_qmax ~  ln_clay:ln_som + 
+                       I((ln_totalp)^2) + ph_h2o:ln_som + ph_h2o * ln_totalp + ln_som:ln_clay+
+                       soilty_alfisols+soilty_inceptisols+soilty_mollisols+soilty_oxisols+soilty_fluvisols, 
+                     data = dt.train)
   
-  # ph_h2o*ln_som+ph_h2o*ln_clay+ph_h2o*ln_al+ph_h2o*ln_fe+ph_h2o*ln_totalp+ln_som*ln_clay+ ln_som*ln_al
-  # +ln_som*ln_fe+ln_clay*ln_al+ln_clay*ln_fe+ln_al*ln_fe
-  # 
-  # glm_qmax <-lm(ln_qmax~ph_h2o+ln_clay*ln_som+ln_totalp+I((ln_totalp)^2)+soilty_alfisols+
-  #                soilty_inceptisols+soilty_mollisols+soilty_oxisols+soilty_fluvisols,#+soilty_saline,
-  #              data = dt.train)
-  # glm_k <-lm(ln_k~ph_h2o+ln_clay*ln_som+ln_totalp+I((ln_totalp)^2)+soilty_alfisols+
-  #             soilty_inceptisols+soilty_mollisols+soilty_oxisols+soilty_fluvisols,#+soilty_saline,
-  #           data = dt.train)
-  # glm_qk <-lm(ln_qk~ph_h2o+ln_clay*ln_som+ln_totalp) #combine residuals1 and 2 in one dataframe
+  glm_k_noFA <-lm(ln_k~ph_h2o:ln_clay +ln_clay+ln_som+ln_totalp+
+                    soilty_alfisols+soilty_inceptisols+soilty_mollisols+soilty_oxisols+soilty_fluvisols,
+            data = dt.train)
+  
+  
+  
+  glm_qk_noFA <-lm(ln_qk~ln_som + ln_totalp + I((ln_totalp)^2) + 
+                     ln_clay + ln_totalp:ph_h2o + ph_h2o:ln_clay + ln_som : ln_totalp + 
+                     soilty_alfisols + soilty_inceptisols + soilty_mollisols + 
+                     soilty_oxisols + soilty_fluvisols,
+                   data = dt.train) 
 
 # building xgboost model---------
  
  #make local copy and split dataset, selected relevant variables
- d3 <- copy(d2[,-c('ln_qmax','ln_qk')])
- #d3 <- copy(d2[,-c(10:14)][,-c('ln_k','ln_qk')])
+ d3 <- copy(d2[,-c('ln_qk','ln_qmax')])
+ #d3 <- copy(d2[,-c(10:14)][,-c('ln_qmax','ln_qk')])
  dt.train.xgb <- d3[rows.train,]
  dt.test.xgb <- d3[rows.test,]
  
@@ -217,15 +223,15 @@
                                y = dt.test.xgb$ln_k, 
                                label = "model_test_xgb")
  
-  cols.lm <- c('ph_h2o','ln_som','ln_totalp','ln_clay','soilty_alfisols','ln_al','ln_fe',
+  cols.lm <- c('ph_h2o','ln_som','ln_totalp','ln_clay','soilty_alfisols',#'ln_al','ln_fe',
               'soilty_fluvisols','soilty_inceptisols','soilty_mollisols',
               'soilty_oxisols')
  
-  explainer.train.lm <- explain(model = glm_k, 
+  explainer.train.lm <- explain(model = glm_k_noFA, 
                                data = as.data.frame(dt.train[, .SD, .SDcols = cols.lm]), 
                                y = dt.train$ln_k, 
                                label = "model_train_glm")
-  explainer.test.lm <- explain(model =glm_k, 
+  explainer.test.lm <- explain(model =glm_k_noFA, 
                               data = as.data.frame(dt.test[, .SD, .SDcols = cols.lm]), 
                               y = dt.test$ln_k, 
                               label = "model_test_glm")
@@ -240,7 +246,7 @@
  
   
   plot.vip <-ggplot_imp(imp.xgb, imp.lm)
-  ggsave(plot = plot.vip,filename = 'products/lnk/withFeAl/plot2_vip_bar.png',width = 13.16, height = 8.90, units='cm')
+  ggsave(plot = plot.vip,filename = 'products/lnk/withoutFeAl/0410plot2_vip_bar.png',width = 13.16, height = 8.90, units='cm')
   
   
  # make a residual plot on test
@@ -253,18 +259,18 @@
   auditor::score_r2(explainer.test.xgb)
  
   plot.res <- ggplot_hist(res.xgb.train,res.xgb.test,res.lm.train,res.lm.test)
-  ggsave(plot = plot.res,filename = 'products/lnk/withFeAl/plot_res.png',width = 13.16, height = 8.90, units='cm')
+  ggsave(plot = plot.res,filename = 'products/lnk/withoutFeAl/0410plot_res.png',width = 13.16, height = 8.90, units='cm')
  
  # make a 1-to-1 plot of both regressions
   
   plot.mp <- ggplot_onetoone(res.xgb.train,res.xgb.test,res.lm.train,res.lm.test)
   plot.mp <- ggplot_onetoone(res.xgb.test,res.lm.test)
   
-  ggsave(plot = plot.mp,filename = 'products/lnk/withFeAl/plot3_1-to-1.png',width = 13.16, height = 8.90, units='cm')
+  ggsave(plot = plot.mp,filename = 'products/lnk/withoutFeAl/0410plot3_1-to-1.png',width = 13.16, height = 8.90, units='cm')
   
   require(patchwork)
   pcombi <- plot.vip + plot.mp
-  ggsave(plot = pcombi,filename = 'products/lnk/withFeAl/plot2_combi.png',width = 13.16, height = 8.90, units='cm')
+  ggsave(plot = pcombi,filename = 'products/lnk/withoutFeAl/0410plot2_combi.png',width = 13.16, height = 8.90, units='cm')
   
  # plot ALE plots
   
@@ -279,14 +285,14 @@
   
   # for regression with Fe+Al
   
-  ale.feox.xgb <- ingredients::accumulated_dependency(explainer.train.xgb, 'ln_fe')
-  ale.feox.lm <- ingredients::accumulated_dependency(explainer.train.lm, 'ln_fe')
-  ale.alox.xgb <- ingredients::accumulated_dependency(explainer.train.xgb, 'ln_al')
-  ale.alox.lm <- ingredients::accumulated_dependency(explainer.train.lm, 'ln_al')
+  # ale.feox.xgb <- ingredients::accumulated_dependency(explainer.train.xgb, 'ln_fe')
+  # ale.feox.lm <- ingredients::accumulated_dependency(explainer.train.lm, 'ln_fe')
+  # ale.alox.xgb <- ingredients::accumulated_dependency(explainer.train.xgb, 'ln_al')
+  # ale.alox.lm <- ingredients::accumulated_dependency(explainer.train.lm, 'ln_al')
   plot.ale <- ggplot_ale(ale.clay.xgb,ale.clay.lm,ale.ph.xgb,ale.ph.lm,
-                         ale.som.xgb,ale.som.lm,ale.totalp.xgb,ale.totalp.lm,
-                         ale.feox.xgb,ale.feox.lm,ale.alox.xgb,ale.alox.lm)
-  ggsave(plot = plot.ale,filename = 'products/lnk/withFeAl/plot2_ale.png',width = 13.16, height = 8.90, units='cm')
+                         ale.som.xgb,ale.som.lm,ale.totalp.xgb,ale.totalp.lm)
+                         # ale.feox.xgb,ale.feox.lm,ale.alox.xgb,ale.alox.lm)
+  ggsave(plot = plot.ale,filename = 'products/lnk/withoutFeAl/0410plot2_ale.png',width = 13.16, height = 8.90, units='cm')
   
   # calculate R2 and RMSE for all models
   library(caret)
@@ -299,11 +305,11 @@
   dt.test.xgb[, predicted := testpred.xgb]
   defaultSummary(data.frame(obs = dt.test.xgb$ln_k, pred = testpred.xgb))
   #
-  trainpred.glm <- predict(glm_k, newdata = dt.train)
+  trainpred.glm <- predict(glm_qmax_noFA, newdata = dt.train)
   dt.train[, predicted := trainpred.glm]
   defaultSummary(data.frame(obs = dt.train$ln_k, pred = trainpred.glm))
   #
-  testpred.glm <- predict(glm_k, newdata = dt.test)
+  testpred.glm <- predict(glm_qmax_noFA, newdata = dt.test)
   dt.test[, predicted := testpred.glm]
   defaultSummary(data.frame(obs = dt.test$ln_k, pred = testpred.glm))
   
@@ -342,7 +348,7 @@
                   legend.text = element_text(family="A", size = 9,face = "bold"),#
                   legend.title = element_text(family="A",size = 9,face = "bold"),#
                   legend.key =  element_rect(fill = "transparent", colour = NA))+#
-          ggtitle("Log(kl)~with Fe&AL[XGBOOST]")+
+          ggtitle("Log(KL)~without Fe&AL[XGBOOST]")+
             theme(plot.title = element_text(hjust = 0.5,family="A",size = 12 )) +
         xlim(-2,3)+ylim(-2,3)+
           geom_abline(intercept = 0,slope=1, colour='black',linetype=2, size=0.5)+
@@ -351,15 +357,15 @@
           geom_text(data = test.label, aes(x = -0.1, y = 1.5), label = test.label$label,
                 inherit.aes = FALSE, col = "#2c7bb6",family="A", size = 4,face = "bold")
   }
-    ggsave("products/lnk/withFeAl/plotEX_xgb.png",width = 13.16, height = 13.16, units='cm', dpi = 800)
+    ggsave("products/lnk/withoutFeAl/plotEX_xgb.png",width = 13.16, height = 13.16, units='cm', dpi = 800)
   
   # ##GLM 
     plotfun <- function(){
        #combine residuals1 and 2 in one dataframe
-       train <- data.table(observed = dt.train$ln_k,
+       train <- data.table(observed = dt.train$ln_qmax,
                            predicted = dt.train$predicted,
                            type = "training")
-       test <- data.table(observed = dt.test$ln_k,
+       test <- data.table(observed = dt.test$ln_qmax,
                           predicted = dt.test$predicted,
                           type = "test")
        combined <- rbind(train, test)
@@ -386,7 +392,7 @@
                 legend.text = element_text(family="A", size = 9,face = "bold"),#
                 legend.title = element_text(family="A",size = 9,face = "bold"),#
                 legend.key =  element_rect(fill = "transparent", colour = NA))+#
-          ggtitle("Log(Kl)~with Fe&AL [Linear]")+
+          ggtitle("Log(KL)~without Fe&AL [Linear]")+
          xlim(-2,3)+ylim(-2,3)+
           theme(plot.title = element_text(hjust = 0.5,family="A",size = 12 )) +
           geom_abline(intercept = 0,slope=1, colour='black',linetype=2, size=0.5)+
@@ -396,7 +402,7 @@
                     inherit.aes = FALSE, col = "#2c7bb6",family="A", size = 4,face = "bold")
   }
   
-    ggsave("products/lnk/withFeAl/plotEX_glm.png",width = 13.16, height = 13.16, units='cm', dpi = 800)
+    ggsave("products/lnk/withoutFeAl/plotEX_glm.png",width = 13.16, height = 13.16, units='cm', dpi = 800)
   
 
  
