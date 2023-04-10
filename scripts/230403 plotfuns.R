@@ -113,12 +113,16 @@ ggplot_hist <- function(...) {
     p <- ggplot(out,aes(x=residual,y=..density..,fill=label)) + 
       geom_histogram(position='identity')  +
       geom_density(aes(x=residual,y=..density..))+
+      xlim(-2,2.5)+ylim(-2,2.5)+
+      scale_y_continuous(expand=c(-2,-2))+
       facet_wrap(~label,scales = "free_y")
     
   } else {
     
     p <- ggplot(out,aes(x=residual,y=..density..,fill=label)) + 
       geom_histogram(position='identity')  +
+      xlim(-2,2.5)+ylim(-2,2.5)+
+      scale_y_continuous(expand=c(-2,-2))+
       geom_density(aes(x=residual,y=..density..))  
     
   }
@@ -166,8 +170,8 @@ ggplot_onetoone <- function(...) {
   }
   
   p <- p + theme_bw() + theme(legend.position = 'none') + 
-    ylab('Predicted KL (scaled to unit variance)') + 
-    xlab('Observed KL (scaled to unit variance)')
+    ylab('Predicted Qmax (scaled to unit variance)') + 
+    xlab('Observed Qmax (scaled to unit variance)')
   
   return(p)
 }
@@ -213,7 +217,7 @@ ggplot_ale <- function(...){
   }
   
   p <- p + theme_bw() + theme(legend.position = 'bottom') + 
-    ylab('Change in average predicted KL\n(scaled to unit variance)') + 
+    ylab('Change in average predicted Qmax\n(scaled to unit variance)') + 
     xlab('Change in explanatory variable (scaled to unit variance)') +
     xlim(xaxmin,xaxmax) +
     theme(axis.text.x = element_text(size = 10),
