@@ -12,24 +12,25 @@
   d1[,psd:= (`pox`/(0.5*(`feox`+`alox`))*100)]
   d1[,mpsc:=0.5*(`alox`+`alox`) ]
 
-  # different classifications for the range of MPSC(maximum P sorption capacity)
   d1$class2 <- ifelse(d1$mpsc <= 30, "<30", ifelse(d1$mpsc <= 50, "30-50", 
-                                                    ifelse(d1$mpsc <= 100, "50-100",
-                                                           ifelse(d1$mpsc <= 200, "100-200", ">200"
-                                                                  ))))
-  d1$class2 <- factor(d1$class2,levels = c("<30","30-50","50-100","100-200",">200"))
- 
-  ggplot(d1[`psd`<=100][`pols`<=600],aes(x=`pols`,y=psd))+
-    geom_point(aes(fill=mpsc))+
-    scale_color_gradient(low = "#ffffb2",high = "#b10026")+
-   scale_fill_manual(values  = c('<30'="#2c7bb6", '30-50'="#abd9e9", '50-100'= "#ffffbf",'100-200'="#fdae61",'>200'="#d7191c"))+
-   labs( x = "P Olsen [mg/kg]", y = "PSD[%]")+
-   guides(fill=guide_legend(title = "MaxPSC /n[mmol/kg]"))+
-   #stat_poly_line(aes(fill= class2,linetype=class2),se = FALSE) +
-   geom_smooth(method = 'lm', se = FALSE,aes(fill= class2,linetype=class2) )+
-   stat_poly_eq(use_label(c("eq", "R2"))) +
-   theme_bw()
+                                                   ifelse(d1$mpsc <= 100, "50-100",
+                                                          ifelse(d1$mpsc <= 200, "100-200", ">200"
+                                                          ))))
+  d1$class2 <- as.factor(factor(d1$class2,levels = c("<30","30-50","50-100","100-200",">200")))
   
- ggsave("dev/pols_psd.png")
+  
+  color <- c("<30"="#fef0d9", "30-50"="#fdcc8a", "50-100"= "#fc8d59","100-200"="#e34a33",">200"="#b30000")
+  ggplot(d1[`psd`<=100][`pols`<=600][`author`!="MURPHY"],aes(x=`pols`,y=psd, fill=class2))+
+    geom_point(aes(color=class2))+
+    geom_smooth(method = 'lm', se = FALSE,aes(linetype=class2, colour=class2) )+
+    
+    scale_color_manual(values =color )+
+    labs( x = "P Olsen [mg/kg]", y = "PSD[%]")+
+    guides(fill=guide_legend(title = "MaxPSC[mmol/kg]"))+
+    stat_poly_eq(use_label(c("eq", "R2"))) +
+    theme(legend.position = c(0.85,0.85))+
+    theme_bw()
+  
+  ggsave("dev/psd_pol.png",width = 18, height = 13.16, units='cm', dpi = 800)
 
  
