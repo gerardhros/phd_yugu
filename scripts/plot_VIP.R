@@ -7,7 +7,7 @@
  
  
  # Set the order of the factor levels for plotting
- order_levels <- c("ln_som","ln_totalp","ln_clay","ph_h2o","ln_fe","ln_al","soilty_fluvisols",
+ order_levels <- c("ln_som","ln_totalp","ln_clay","ph_h2o","soilty_fluvisols",#"ln_fe","ln_al",
                    "soilty_saline","soilty_alfisols","soilty_inceptisols",
                    "soilty_oxisols","soilty_mollisols")
  
@@ -26,7 +26,7 @@
    labs(x = "Relative Importance (%)", y = "Feature") +
    ggtitle("XGBoost Feature Importance")
  
- ggsave('products/qmax/withFeAl/plotVIP_xgb.png',width = 13.16, height = 10.90, units='cm')
+ ggsave('products/qmax/withoutFeAl/plotVIP_xgb.png',width = 13.16, height = 10.90, units='cm')
  
  ggplot(imp.lm.dt, aes(x = Importance, y = reorder(Feature, Importance))) +
    geom_bar(stat = "identity") +
@@ -34,13 +34,13 @@
    labs(x = "Relative Importance (%)", y = "Feature") +
    ggtitle("Linear Regression Feature Importance")
  
- ggsave('products/qmax/withFeAl/plotVIP_glm.png',width = 13.16, height = 10.90, units='cm')
+ ggsave('products/qmax/withoutFeAl/plotVIP_glm.png',width = 13.16, height = 10.90, units='cm')
  
  # try to make a plot for preicting Qmax with 2 important variables
  
  yhat <- function(X.model, newdata) as.numeric(predict(X.model, newdata))
- ALE_2vari <- ALEPlot::ALEPlot(dt.train.xgb[,-c('ln_k','ln_qk')], X.model = explainer.train.xgb , 
-                  pred.fun = yhat, J = c("ln_al","ln_totalp"), NA.plot = TRUE) 
-
+ ALE_2vari <- ALEPlot::ALEPlot(dt.train[,-c('ln_k','ln_qk')], X.model = explainer.train.lm, 
+                  pred.fun = yhat, J = c("ph_h2o","ln_totalp"), NA.plot = TRUE) 
+ 
  ggsave( 'products/qmax/withFeAl/plotALE_2vari.png',width = 13.16, height = 10.90, units='cm')
  
