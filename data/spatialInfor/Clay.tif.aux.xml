@@ -1,0 +1,442 @@
+<PAMDataset>
+  <Metadata>
+    <MDI key="DataType">Generic</MDI>
+  </Metadata>
+  <Metadata domain="Esri">
+    <MDI key="PyramidResamplingType">NEAREST</MDI>
+  </Metadata>
+  <PAMRasterBand band="1">
+    <Histograms>
+      <HistItem>
+        <HistMin>0</HistMin>
+        <HistMax>85</HistMax>
+        <BucketCount>256</BucketCount>
+        <IncludeOutOfRange>1</IncludeOutOfRange>
+        <Approximate>0</Approximate>
+        <HistCounts>174594|0|0|25|0|0|2430|0|0|13328|0|0|56982|0|0|650130|0|0|1208464|0|0|6737|0|0|111612|0|0|66652|0|0|132774|0|0|34661|0|0|86122|0|0|6141|0|0|7026|0|0|21944|0|0|66532|0|0|108148|0|0|288953|0|0|328714|0|0|883959|0|0|1243342|0|0|1256116|0|0|687557|0|0|392703|0|0|196676|0|0|257484|0|0|43444|0|0|9117|0|0|19316|0|0|8538|0|0|3628|0|0|156976|0|0|44|0|0|141|0|0|8|0|0|5|0|0|19|0|0|2086|0|0|19482|0|0|5499|0|0|1329|0|0|4821|0|0|64340|0|0|37654|0|0|1651|0|0|105416|0|0|140534|0|0|205553|0|0|6653|0|0|131889|0|0|6561|0|0|56214|0|0|63|0|0|8664|0|0|11289|0|0|37401|0|0|18|0|0|8|0|0|16|0|0|22|0|0|5|0|0|7|0|0|1|0|0|4|0|0|1|0|0|5|0|0|3073|0|0|1|0|0|2|0|0|2|0|0|1|0|0|0|0|0|0|0|0|3|0|0|1|0|0|0|0|0|0|0|0|0|0|0|4|0|0|0|0|0|1|0|0|2|0|0|0|0|0|1|0|0|1</HistCounts>
+      </HistItem>
+    </Histograms>
+    <GDALRasterAttributeTable>
+      <FieldDefn index="0">
+        <Name>OID</Name>
+        <Type>0</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="1">
+        <Name>Value</Name>
+        <Type>0</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <FieldDefn index="2">
+        <Name>Count</Name>
+        <Type>1</Type>
+        <Usage>0</Usage>
+      </FieldDefn>
+      <Row index="0">
+        <F>0</F>
+        <F>0</F>
+        <F>174594</F>
+      </Row>
+      <Row index="1">
+        <F>1</F>
+        <F>1</F>
+        <F>25</F>
+      </Row>
+      <Row index="2">
+        <F>2</F>
+        <F>2</F>
+        <F>2430</F>
+      </Row>
+      <Row index="3">
+        <F>3</F>
+        <F>3</F>
+        <F>13328</F>
+      </Row>
+      <Row index="4">
+        <F>4</F>
+        <F>4</F>
+        <F>56982</F>
+      </Row>
+      <Row index="5">
+        <F>5</F>
+        <F>5</F>
+        <F>650130</F>
+      </Row>
+      <Row index="6">
+        <F>6</F>
+        <F>6</F>
+        <F>1208464</F>
+      </Row>
+      <Row index="7">
+        <F>7</F>
+        <F>7</F>
+        <F>6737</F>
+      </Row>
+      <Row index="8">
+        <F>8</F>
+        <F>8</F>
+        <F>111612</F>
+      </Row>
+      <Row index="9">
+        <F>9</F>
+        <F>9</F>
+        <F>66652</F>
+      </Row>
+      <Row index="10">
+        <F>10</F>
+        <F>10</F>
+        <F>132774</F>
+      </Row>
+      <Row index="11">
+        <F>11</F>
+        <F>11</F>
+        <F>34661</F>
+      </Row>
+      <Row index="12">
+        <F>12</F>
+        <F>12</F>
+        <F>86122</F>
+      </Row>
+      <Row index="13">
+        <F>13</F>
+        <F>13</F>
+        <F>6141</F>
+      </Row>
+      <Row index="14">
+        <F>14</F>
+        <F>14</F>
+        <F>7026</F>
+      </Row>
+      <Row index="15">
+        <F>15</F>
+        <F>15</F>
+        <F>21944</F>
+      </Row>
+      <Row index="16">
+        <F>16</F>
+        <F>16</F>
+        <F>66532</F>
+      </Row>
+      <Row index="17">
+        <F>17</F>
+        <F>17</F>
+        <F>108148</F>
+      </Row>
+      <Row index="18">
+        <F>18</F>
+        <F>18</F>
+        <F>288953</F>
+      </Row>
+      <Row index="19">
+        <F>19</F>
+        <F>19</F>
+        <F>328714</F>
+      </Row>
+      <Row index="20">
+        <F>20</F>
+        <F>20</F>
+        <F>883959</F>
+      </Row>
+      <Row index="21">
+        <F>21</F>
+        <F>21</F>
+        <F>1243342</F>
+      </Row>
+      <Row index="22">
+        <F>22</F>
+        <F>22</F>
+        <F>1256116</F>
+      </Row>
+      <Row index="23">
+        <F>23</F>
+        <F>23</F>
+        <F>687557</F>
+      </Row>
+      <Row index="24">
+        <F>24</F>
+        <F>24</F>
+        <F>392703</F>
+      </Row>
+      <Row index="25">
+        <F>25</F>
+        <F>25</F>
+        <F>196676</F>
+      </Row>
+      <Row index="26">
+        <F>26</F>
+        <F>26</F>
+        <F>257484</F>
+      </Row>
+      <Row index="27">
+        <F>27</F>
+        <F>27</F>
+        <F>43444</F>
+      </Row>
+      <Row index="28">
+        <F>28</F>
+        <F>28</F>
+        <F>9117</F>
+      </Row>
+      <Row index="29">
+        <F>29</F>
+        <F>29</F>
+        <F>19316</F>
+      </Row>
+      <Row index="30">
+        <F>30</F>
+        <F>30</F>
+        <F>8538</F>
+      </Row>
+      <Row index="31">
+        <F>31</F>
+        <F>31</F>
+        <F>3628</F>
+      </Row>
+      <Row index="32">
+        <F>32</F>
+        <F>32</F>
+        <F>156976</F>
+      </Row>
+      <Row index="33">
+        <F>33</F>
+        <F>33</F>
+        <F>44</F>
+      </Row>
+      <Row index="34">
+        <F>34</F>
+        <F>34</F>
+        <F>141</F>
+      </Row>
+      <Row index="35">
+        <F>35</F>
+        <F>35</F>
+        <F>8</F>
+      </Row>
+      <Row index="36">
+        <F>36</F>
+        <F>36</F>
+        <F>5</F>
+      </Row>
+      <Row index="37">
+        <F>37</F>
+        <F>37</F>
+        <F>19</F>
+      </Row>
+      <Row index="38">
+        <F>38</F>
+        <F>38</F>
+        <F>2086</F>
+      </Row>
+      <Row index="39">
+        <F>39</F>
+        <F>39</F>
+        <F>19482</F>
+      </Row>
+      <Row index="40">
+        <F>40</F>
+        <F>40</F>
+        <F>5499</F>
+      </Row>
+      <Row index="41">
+        <F>41</F>
+        <F>41</F>
+        <F>1329</F>
+      </Row>
+      <Row index="42">
+        <F>42</F>
+        <F>42</F>
+        <F>4821</F>
+      </Row>
+      <Row index="43">
+        <F>43</F>
+        <F>43</F>
+        <F>64340</F>
+      </Row>
+      <Row index="44">
+        <F>44</F>
+        <F>44</F>
+        <F>37654</F>
+      </Row>
+      <Row index="45">
+        <F>45</F>
+        <F>45</F>
+        <F>1651</F>
+      </Row>
+      <Row index="46">
+        <F>46</F>
+        <F>46</F>
+        <F>105416</F>
+      </Row>
+      <Row index="47">
+        <F>47</F>
+        <F>47</F>
+        <F>140534</F>
+      </Row>
+      <Row index="48">
+        <F>48</F>
+        <F>48</F>
+        <F>205553</F>
+      </Row>
+      <Row index="49">
+        <F>49</F>
+        <F>49</F>
+        <F>6653</F>
+      </Row>
+      <Row index="50">
+        <F>50</F>
+        <F>50</F>
+        <F>131889</F>
+      </Row>
+      <Row index="51">
+        <F>51</F>
+        <F>51</F>
+        <F>6561</F>
+      </Row>
+      <Row index="52">
+        <F>52</F>
+        <F>52</F>
+        <F>56214</F>
+      </Row>
+      <Row index="53">
+        <F>53</F>
+        <F>53</F>
+        <F>63</F>
+      </Row>
+      <Row index="54">
+        <F>54</F>
+        <F>54</F>
+        <F>8664</F>
+      </Row>
+      <Row index="55">
+        <F>55</F>
+        <F>55</F>
+        <F>11289</F>
+      </Row>
+      <Row index="56">
+        <F>56</F>
+        <F>56</F>
+        <F>37401</F>
+      </Row>
+      <Row index="57">
+        <F>57</F>
+        <F>57</F>
+        <F>18</F>
+      </Row>
+      <Row index="58">
+        <F>58</F>
+        <F>58</F>
+        <F>8</F>
+      </Row>
+      <Row index="59">
+        <F>59</F>
+        <F>59</F>
+        <F>16</F>
+      </Row>
+      <Row index="60">
+        <F>60</F>
+        <F>60</F>
+        <F>22</F>
+      </Row>
+      <Row index="61">
+        <F>61</F>
+        <F>61</F>
+        <F>5</F>
+      </Row>
+      <Row index="62">
+        <F>62</F>
+        <F>62</F>
+        <F>7</F>
+      </Row>
+      <Row index="63">
+        <F>63</F>
+        <F>63</F>
+        <F>1</F>
+      </Row>
+      <Row index="64">
+        <F>64</F>
+        <F>64</F>
+        <F>4</F>
+      </Row>
+      <Row index="65">
+        <F>65</F>
+        <F>65</F>
+        <F>1</F>
+      </Row>
+      <Row index="66">
+        <F>66</F>
+        <F>66</F>
+        <F>5</F>
+      </Row>
+      <Row index="67">
+        <F>67</F>
+        <F>67</F>
+        <F>3073</F>
+      </Row>
+      <Row index="68">
+        <F>68</F>
+        <F>68</F>
+        <F>1</F>
+      </Row>
+      <Row index="69">
+        <F>69</F>
+        <F>69</F>
+        <F>2</F>
+      </Row>
+      <Row index="70">
+        <F>70</F>
+        <F>70</F>
+        <F>2</F>
+      </Row>
+      <Row index="71">
+        <F>71</F>
+        <F>71</F>
+        <F>1</F>
+      </Row>
+      <Row index="72">
+        <F>72</F>
+        <F>74</F>
+        <F>3</F>
+      </Row>
+      <Row index="73">
+        <F>73</F>
+        <F>75</F>
+        <F>1</F>
+      </Row>
+      <Row index="74">
+        <F>74</F>
+        <F>79</F>
+        <F>4</F>
+      </Row>
+      <Row index="75">
+        <F>75</F>
+        <F>81</F>
+        <F>1</F>
+      </Row>
+      <Row index="76">
+        <F>76</F>
+        <F>82</F>
+        <F>2</F>
+      </Row>
+      <Row index="77">
+        <F>77</F>
+        <F>84</F>
+        <F>1</F>
+      </Row>
+      <Row index="78">
+        <F>78</F>
+        <F>85</F>
+        <F>1</F>
+      </Row>
+    </GDALRasterAttributeTable>
+    <Metadata>
+      <MDI key="STATISTICS_MINIMUM">0</MDI>
+      <MDI key="STATISTICS_MAXIMUM">85</MDI>
+      <MDI key="STATISTICS_MEAN">19.857251644758</MDI>
+      <MDI key="STATISTICS_STDDEV">11.573754155051</MDI>
+      <MDI key="STATISTICS_SKIPFACTORX">1</MDI>
+      <MDI key="STATISTICS_SKIPFACTORY">1</MDI>
+      <MDI key="STATISTICS_EXCLUDEDVALUES"></MDI>
+      <MDI key="STATISTICS_COVARIANCES">133.951785241564</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>
