@@ -1,7 +1,13 @@
+
+Notes for data file"paper1_origional_new.csv"
 som= soc*1.724
-
 all data come from published papers from both web of science and CKNI
-
 missing clay content comes from HWSD based on location
-
 soil type were unified into USDA soil taxonomy (12 orders) nased on soil classification ref 1 and soil classification ref 2 plus infor from public reports/papers
+
+
+
+Notes for data file "data for deriving FeAl.csv"
+Fe and Al extractant meothods follw schoumans 2000
+Quzhou and Qiyang datapoints were measured values
+Switherlands dataset from  Emily et al., 2020
