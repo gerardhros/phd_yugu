@@ -197,7 +197,7 @@ ggplot_ale <- function(...){
   out[,parm:= gsub('ln_','',parm)]
   
   # set axes
-  xaxmax <- min(3,max(out$x))
+  xaxmax <- min(10,max(out$x))
   xaxmin <- max(-3,min(out$x))
   
   # make a ALE plot
