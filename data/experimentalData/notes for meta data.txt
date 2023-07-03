@@ -1,0 +1,7 @@
+som= soc*1.724
+
+all data come from published papers from both web of science and CKNI
+
+missing clay content comes from HWSD based on location
+
+soil type were unified into USDA soil taxonomy (12 orders) nased on soil classification ref 1 and soil classification ref 2 plus infor from public reports/papers
