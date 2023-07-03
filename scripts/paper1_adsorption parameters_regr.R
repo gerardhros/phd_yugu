@@ -7,14 +7,49 @@
   library(mlr3measures); library(mlr3tuning);library(paradox);library(DALEX)
  
  # Load data
-  d1 <- fread("data/experimentalData/paper1_lr_origional.csv")
-  length(unique(d1$title))
+  d1 <- fread("data/experimentalData/paper1_origional_new.csv")
+  #length(unique(d1$title))
  
  # Rename columns
   cols_old <- colnames(d1)
   cols_new <- tolower(unlist(tstrsplit(cols_old,'\\[',keep=1)))
   setnames(d1,cols_old,cols_new)
  
+  cols.num <- c("ph","som","clay","ptotal","qmax","kl")
+  d1[,c(cols.num) := lapply(.SD,as.numeric),.SDcols = cols.num]
+  d1[,id_new := .GRP,by='title']
+  library(mice);library(VIM)
+  md.pattern(d1[,c("id_new","id","longtitude", "latitude" ,
+                   "soil type" ,"ph"  ,"som" ,"clay",
+                   "caco3" , "alox" ,"feox" , "polsen","ptotal","qmax" ,"kl"   )],rotate.names = TRUE)
+  aggr(d1[,c("id_new","id","longtitude", "latitude" ,
+             "soil type" ,"ph"  ,"som" ,"clay",
+             "caco3" , "alox" ,"feox" , "polsen","ptotal","qmax" ,"kl")],
+       prop=F, number = T)
+  
+  
+  d1[,ln_qmax:= log(qmax)][,ln_qk:= log(qmax/kl)][,ln_som:=log(som)][,ln_totalp:=log(ptotal)][,ln_k:= log(kl)][,ln_clay:=log(clay)]
+  d2 <- as.data.table(na.omit(d1[qmax<3000][som<100][ptotal<3][,c("ph","ln_som","ln_totalp","ln_qmax","ln_k")]))
+  
+  
+  library(ggcorrplot)
+  
+  # Calculate correlation matrix and corresponding P values
+  corr_mat <- cor(d2)
+  p_mat <- cor_pmat(d2, method = "pearson")
+  # Create correlation plot 
+  ggcorrplot(corr_mat, 
+             p.mat = p_mat)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+####################################################################################  
  # remove strange data from specific study
   d1[,title2 := .GRP,by='title']
  
@@ -22,12 +57,12 @@
   cols.num <- c("ph_h2o","som","clay","caco3","al","fe","qmax","klnew", "totalp")
   d1[,c(cols.num) := lapply(.SD,as.numeric),.SDcols = cols.num]
  
- # paper in title 2==7 is natural soil and no human intervention;titl2==80 is dong fang's unpublished paper
+ # paper in title 2==7 is natural soil and no human intervention;titl2==80 is dong fang's unpublished paper, Japanese soil(1 point) from Ruixia Wang has been deleted 
  # selected variables for regression
-  d2 <- d1[title2!=7& title2!=80][,c("ph_h2o","som","clay","soil_type_fao2","al","fe","totalp","qmax","klnew")]
+  d2 <- d1[title2!=7& title2!=80][,c("ph_h2o","som","clay","soil_type_fao2","totalp","qmax","klnew")]
 
   d2[,ln_qmax:= log(qmax)][,ln_k:= log(klnew)][,ln_qk:= log(qmax/klnew)][,ln_som:=log(som)][,ln_clay:=log(clay)][,ln_totalp:=log(totalp)]
-  d2[, ln_al:= log(al)][,ln_fe:= log(fe)]
+  #d2[, ln_al:= log(al)][,ln_fe:= log(fe)]
   
  #add new categorical variable for soil type to decrease the number of soil types
   
@@ -41,22 +76,23 @@
    # which columns are numeric
   
   cols <- colnames(d2[ , .SD, .SDcols = is.numeric])
-  d2.mean <- d2[,lapply(.SD,mean,na.rm=T),.SDcols = cols]
-  d2.sd <- d2[,lapply(.SD,sd,na.rm=T),.SDcols = cols] 
-
-  # save mean and sd per variable
+  
+  dt <- as.data.table(na.omit(d2[qmax <= 3000]))
+ 
+  
+   # save mean and sd per variable
   
   d2.mean <- d2[,lapply(.SD,mean,na.rm=T),.SDcols = cols]
   d2.sd <- d2[,lapply(.SD,sd,na.rm=T),.SDcols = cols] 
  
   # scale
   
-  d2[,c(cols) := lapply(.SD,scale),.SDcols = cols]
+  dt[,c(cols) := lapply(.SD,scale),.SDcols = cols]
  
   # remove the variable not needed anymore
   
-  cols <- c("som","clay","totalp","qmax","klnew","soil_type_fao2","al","fe","ln_al","ln_fe")
-  d2 <- as.data.table(na.omit(d2[,c(cols):=NULL]))
+  cols <- c("som","clay","totalp","qmax","klnew","soil_type_fao2")#,"al","fe","ln_al","ln_fe")
+  d2 <- as.data.table(na.omit(dt[,c(cols):=NULL]))
   
   # perform correlation test for all numeric variables
   
@@ -72,12 +108,12 @@
   
   # Perform chi-square tests for the correlation between soil type and all numeric variables
   
-  chisq <- data.frame(variable = character(), p_value = numeric(), stringsAsFactors = FALSE)
+  chisq <- data.frame(variable = character(), p_value = numeric(), X_squared = numeric(), stringsAsFactors = FALSE)
   
   for (var in colnames(d2)) {
     if (is.numeric(d2[[var]])) {
       chisq_result <- chisq.test(table(d2$soilty, d2[[var]]))
-      chisq <- rbind(chisq, data.frame(variable = var, p_value = chisq_result$p.value))
+      chisq <- rbind(chisq, data.frame(variable = var, p_value = chisq_result$p.value, X_squared = chisq_result$statistic))
     } else {
       warning(sprintf("Skipping non-numeric variable '%s'", var))
     }
@@ -103,50 +139,70 @@
   rows.train <- which(! 1:nrow(d2) %in% rows.test)
  
   # make two separate data.tables with training and testing data
-  
+
   dt.train <- d2[rows.train,]
   dt.test <- d2[rows.test,]
  
   # make a linear model on training data with Fe&Al
  
-  glm_qmax <-lm(formula = ln_qmax ~ ln_totalp + ph_h2o:ln_totalp + ln_som:ln_al + 
-                  ln_al, data = dt.train)
-  
-  glm_k <-lm(formula = ln_k ~ ln_totalp + ln_al + ph_h2o:ln_clay + ph_h2o:ln_al + 
-                               ph_h2o:ln_fe + ln_clay:ln_al + ln_clay:ln_fe + ln_al:ln_fe, 
-                         data = dt.train)
-  
-  glm_qk <-lm(formula = ln_qk ~ ln_clay:ln_som + ph_h2o:ln_fe + ln_totalp, data = dt.train)
+  # glm_qmax <-lm(formula = ln_qmax ~ ln_totalp + ph_h2o:ln_totalp + ln_som:ln_al + 
+  #                 ln_al, data = dt.train)
+  # 
+  # glm_k <-lm(formula = ln_k ~ ln_totalp + ln_al + ph_h2o:ln_clay + ph_h2o:ln_al + 
+  #                              ph_h2o:ln_fe + ln_clay:ln_al + ln_clay:ln_fe + ln_al:ln_fe, 
+  #                        data = dt.train)
+  # 
+  # glm_qk <-lm(formula = ln_qk ~ ln_clay:ln_som + ph_h2o:ln_fe + ln_totalp, data = dt.train)
  
   # make a linear model on training data without Fe&Al
-
-  glm_qmax_noFA <-lm(formula = ln_qmax ~  ln_clay:ln_som + 
-                       I((ln_totalp)^2) + ph_h2o:ln_som + ph_h2o * ln_totalp + ln_som:ln_clay+
-                       soilty_alfisols+soilty_inceptisols+soilty_mollisols+soilty_oxisols+soilty_fluvisols, 
-                     data = dt.train)
+  #ln_clay:ln_som+ln_clay:ln_totalp+ln_clay:ph_h2o+ln_som:ln_totalp+ln_som:ph_h2o+ln_totalp:ph_h2o+
   
-  glm_k_noFA <-lm(ln_k~ph_h2o:ln_clay +ln_clay+ln_som+ln_totalp+
-                    soilty_alfisols+soilty_inceptisols+soilty_mollisols+soilty_oxisols+soilty_fluvisols,
-            data = dt.train)
+  #FAST means Fe, Al and soil type
+  
+  glm_qmax_noFAST <- lm(formula = ln_qmax ~ ln_clay:ln_som + ln_clay:ln_som + ln_clay:ln_totalp + 
+                          ln_clay + ln_som + I((ln_totalp)^2) + ph_h2o + ln_totalp + 
+                          ln_som:ln_clay + I((ln_som)^2), data = dt.train)#0.4187
+  
+  glm_k_noFAST <- lm(formula = ln_k ~ I(ln_som^2) + ln_clay:ph_h2o + ln_totalp + 
+                       ln_clay:ph_h2o, data = dt.train)#0.17
+  
+  glm_qk_noFAST <- lm(formula = ln_qk ~ ln_clay:ln_som + I((ln_totalp)^2) + ln_totalp + 
+                        ln_clay:ln_som + ln_clay:ph_h2o + I((ln_som)^2), data = dt.train)#0.2862
   
   
+  glm_qmax_noFA <-lm(formula = ln_qmax ~ ln_clay:ln_totalp + ln_totalp + I((ln_totalp)^2) + 
+                       ln_som + I((ln_som)^2) + ln_clay + soilty_alfisols + soilty_inceptisols + 
+                       soilty_mollisols + soilty_oxisols + soilty_fluvisols, data = dt.train)#0.4265
   
-  glm_qk_noFA <-lm(ln_qk~ln_som + ln_totalp + I((ln_totalp)^2) + 
-                     ln_clay + ln_totalp:ph_h2o + ph_h2o:ln_clay + ln_som : ln_totalp + 
-                     soilty_alfisols + soilty_inceptisols + soilty_mollisols + 
-                     soilty_oxisols + soilty_fluvisols,
-                   data = dt.train) 
+  glm_k_noFA <-lm(formula = ln_k ~ ln_clay + ln_som + ln_totalp + ln_som:ph_h2o + 
+                    soilty_alfisols + soilty_inceptisols + soilty_mollisols + 
+                    soilty_oxisols + soilty_fluvisols, data = dt.train) #0.26
+  
+  glm_qk_noFA <-lm(formula = ln_qk ~ ln_som + ln_totalp + ln_clay:ln_som + ln_clay:ph_h2o + 
+                     ph_h2o:ln_clay + soilty_alfisols + soilty_inceptisols + soilty_mollisols + 
+                     soilty_oxisols + soilty_fluvisols, data = dt.train)#0.3368
 
 # building xgboost model---------
  
  #make local copy and split dataset, selected relevant variables
- d3 <- copy(d2[,-c('ln_qk','ln_qmax')])
- #d3 <- copy(d2[,-c(10:14)][,-c('ln_qmax','ln_qk')])
+  #d3 <- copy(d2[,-c('ln_k','ln_qmax')])
+  #d3 <- copy(d2[,-c(8:13)][,-c('ln_k','ln_qmax')])
+  d3 <- copy(d2[,-'ln_k'])
+
+  set.seed(123)
+  fr.test <- 0.30
+  rows.test <- sample(1:nrow(d2), size = fr.test * nrow(d2), replace = FALSE)
+  rows.train <- which(! 1:nrow(d2) %in% rows.test)
+  
+  dt.train <- d3[rows.train,]
+  dt.test <- d3[rows.test,]
+  
+  
  dt.train.xgb <- d3[rows.train,]
  dt.test.xgb <- d3[rows.test,]
  
  # set tuning methods
- target <- "ln_k"
+ target <- "ln_qmax"
  tune_method <- "hyperband"#methods for best parameter
 
  ###########
@@ -216,24 +272,26 @@
 # Create the explainers for both models
   explainer.train.xgb <- explain(model, 
                                 data = as.data.frame(dt.train.xgb[, .SD, .SDcols = !c(target)]), 
-                                y = dt.train.xgb$ln_k, 
+                                y = dt.train.xgb$ln_qmax, 
                                 label = "model_train_xgb")
   explainer.test.xgb <- explain(model, 
                                data = as.data.frame(dt.test.xgb[, .SD, .SDcols = !c(target)]), 
-                               y = dt.test.xgb$ln_k, 
+                               y = dt.test.xgb$ln_qmax, 
                                label = "model_test_xgb")
  
-  cols.lm <- c('ph_h2o','ln_som','ln_totalp','ln_clay','soilty_alfisols',#'ln_al','ln_fe',
-              'soilty_fluvisols','soilty_inceptisols','soilty_mollisols',
-              'soilty_oxisols')
+  # cols.lm <- c('ph_h2o','ln_som','ln_totalp','ln_clay','soilty_alfisols',#'ln_al','ln_fe',
+  #             'soilty_fluvisols','soilty_inceptisols','soilty_mollisols',
+  #             'soilty_oxisols')
+  
+  cols.lm <- c('ph','ln_som','ln_totalp')
  
-  explainer.train.lm <- explain(model = glm_k_noFA, 
+  explainer.train.lm <- explain(model = glm_qk_noFA, 
                                data = as.data.frame(dt.train[, .SD, .SDcols = cols.lm]), 
-                               y = dt.train$ln_k, 
+                               y = dt.train$ln_qk, 
                                label = "model_train_glm")
-  explainer.test.lm <- explain(model =glm_k_noFA, 
+  explainer.test.lm <- explain(model =glm_qk_noFA, 
                               data = as.data.frame(dt.test[, .SD, .SDcols = cols.lm]), 
-                              y = dt.test$ln_k, 
+                              y = dt.test$ln_qk, 
                               label = "model_test_glm")
  
  # make VIP plot on training sets
@@ -299,29 +357,29 @@
   #
   trainpred.xgb <- predict(model, newdata = dt.train.xgb)
   dt.train.xgb[, predicted := trainpred.xgb]
-  defaultSummary(data.frame(obs = dt.train.xgb$ln_k, pred = trainpred.xgb))
+  defaultSummary(data.frame(obs = dt.train.xgb$ln_qmax, pred = trainpred.xgb))
   #
   testpred.xgb <- predict(model, newdata = dt.test.xgb)
   dt.test.xgb[, predicted := testpred.xgb]
-  defaultSummary(data.frame(obs = dt.test.xgb$ln_k, pred = testpred.xgb))
+  defaultSummary(data.frame(obs = dt.test.xgb$ln_qmax, pred = testpred.xgb))
   #
-  trainpred.glm <- predict(glm_qmax_noFA, newdata = dt.train)
+  trainpred.glm <- predict(glm_qk_noFA, newdata = dt.train)
   dt.train[, predicted := trainpred.glm]
-  defaultSummary(data.frame(obs = dt.train$ln_k, pred = trainpred.glm))
+  defaultSummary(data.frame(obs = dt.train$ln_qk, pred = trainpred.glm))
   #
-  testpred.glm <- predict(glm_qmax_noFA, newdata = dt.test)
+  testpred.glm <- predict(glm_qk_noFA, newdata = dt.test)
   dt.test[, predicted := testpred.glm]
-  defaultSummary(data.frame(obs = dt.test$ln_k, pred = testpred.glm))
+  defaultSummary(data.frame(obs = dt.test$ln_qk, pred = testpred.glm))
   
 # plot 1 - 1 for both regression models
   
   # ##XGBOOST
     plotfun <- function(){
       #combine residuals1 and 2 in one dataframe
-      train <- data.table(observed = dt.train.xgb$ln_k,
+      train <- data.table(observed = dt.train.xgb$ln_qmax,
                         predicted = dt.train.xgb$predicted,
                         type = "training")
-      test <- data.table(observed = dt.test.xgb$ln_k,
+      test <- data.table(observed = dt.test.xgb$ln_qmax,
                        predicted = dt.test.xgb$predicted,
                        type = "test")
       combined <- rbind(train, test)
@@ -348,7 +406,7 @@
                   legend.text = element_text(family="A", size = 9,face = "bold"),#
                   legend.title = element_text(family="A",size = 9,face = "bold"),#
                   legend.key =  element_rect(fill = "transparent", colour = NA))+#
-          ggtitle("Log(KL)~without Fe&AL[XGBOOST]")+
+          ggtitle("Log(Qmax)~without Fe&AL[XGBOOST]")+
             theme(plot.title = element_text(hjust = 0.5,family="A",size = 12 )) +
         xlim(-2,3)+ylim(-2,3)+
           geom_abline(intercept = 0,slope=1, colour='black',linetype=2, size=0.5)+
@@ -362,10 +420,10 @@
   # ##GLM 
     plotfun <- function(){
        #combine residuals1 and 2 in one dataframe
-       train <- data.table(observed = dt.train$ln_qmax,
+       train <- data.table(observed = dt.train$ln_qk,
                            predicted = dt.train$predicted,
                            type = "training")
-       test <- data.table(observed = dt.test$ln_qmax,
+       test <- data.table(observed = dt.test$ln_qk,
                           predicted = dt.test$predicted,
                           type = "test")
        combined <- rbind(train, test)
@@ -392,7 +450,7 @@
                 legend.text = element_text(family="A", size = 9,face = "bold"),#
                 legend.title = element_text(family="A",size = 9,face = "bold"),#
                 legend.key =  element_rect(fill = "transparent", colour = NA))+#
-          ggtitle("Log(KL)~without Fe&AL [Linear]")+
+          ggtitle("Log(Q/K)~without Fe&AL [GLM]")+
          xlim(-2,3)+ylim(-2,3)+
           theme(plot.title = element_text(hjust = 0.5,family="A",size = 12 )) +
           geom_abline(intercept = 0,slope=1, colour='black',linetype=2, size=0.5)+
