@@ -44,7 +44,6 @@
  
  ##----- 
  
- 
  myield_tar <- 5096 #  maximum maize yield kg/ha from paper1
  wyield_tar <- 1272 #  maximum wheat yield kg/ha from paper1
  mgrainP_con <- 2.18 # maize grain P concentraion g/kg, ref(Qichao phd thesis)
@@ -71,48 +70,42 @@
  
  ## plot spatial P required amount
  library(sf);library(raster);library(terra);library(gstat);library(stars)
- ##load data for Qiyang shape
+ 
+ ##load data and set coordinate system for the county 
  QY <- st_read("data/spatialInfor/Qiyang.shp") 
  QY_map <- QY[,c(2,5)]
  QY_sf <-st_transform(QY_map, "epsg:32649")#
- sum(st_area(QY_sf))#area
- st_crs(QY_sf)#get/set Coordinate reference system
  QYBorder <- st_cast(QY_sf, "MULTILINESTRING")# 
+
+ #raster data for landuse map,maybe useful later
+ # load land use raster data 
  
- # Land use raster for idw
- QYtif <- terra::rast('data/spatialInfor/ld2015.tif') 
- QYtif <- terra::project(QYtif, "epsg:32649")
+ # QYtif <- raster('data/spatialInfor/ld2015.tif') 
+ # 
+ # # specify project coordinate system 
+ # 
+ # QYtif <-projectRaster(QYtif, crs = "epsg:32649")
  
+ #selected data for IDW interploation 
  
- reclass_table <- matrix(data=cbind(  c(1,11,18,26,34,46),
-                                      c(11,18,26,34,46,100),
-                                      c(1,2,3,3,4,5)), ncol=3)# evidence for re_group 5 groups
- # 1 = paddy
- # 2 = upland
- # 3 = Forest + grassland
- # 4 = waterfield
- # 5 = urban and infrastructure + nature
+ qy <- QY_data[,c("lat","lon","priPSD_mid","priOls_mid")]
  
- QY_recl <- classify(QYtif, reclass_table, filename="data/spatialInfor/QY_reclass.tif",
-                     overwrite=T)
- #frequency distribution for different types 
- freq(QY_recl)
- QY_rast <- st_as_stars(QY_recl) 
+ # specify coordinates
  
+ coordinates(qy) <- ~lon+lat
  
- ##QY_data is origional dataset, and QY_data3 is dataset after finish outlier test
+ # specify coordinates reference system
  
- qy <- QY_data[,c("lat","lon","priOls_mid")]
- qy <- st_as_sf(qy, coords= c("lat","lon"), crs = 4214)
- st_crs(qy)
- qy_sf<-st_transform(qy , "epsg:32649")
+ proj4string(qy) <- CRS("EPSG:32649")
+
+ # idw interpolation for required P amount
  
- pols <-gstat::idw(formula = priOls_mid ~ 1,#key parameters
-                     locations = qy_sf,
-                     newdata =QY_rast,
-                     idp = 2)
+ pols <-gstat::idw(formula = priPSD_mid ~ 1,#key parameters
+                     locations = qy,
+                     newdata = QY_sf,
+                     idp = 1)
  
- pols.dt <- terra::as.data.frame(pols,xy =TRUE)
+ # visualize P required amount for the county
  
- ggplot() + geom_tile(data = pols.dt, aes(x = x, y = y, fill = pols.dt)) +
-   coord_sf(crs = st_crs(QYBorder)) 
+ ggplot() + geom_tile(data = pols, aes(x = x, y = y, fill= var1.pred)) +
+   coord_sf(crs = st_crs(QY_sf)) 
